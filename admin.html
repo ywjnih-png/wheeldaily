@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel - Daily Daget</title>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    body {
+      background: #0a1a2f;
+      color: white;
+      font-family: Arial;
+      text-align: center;
+      padding: 20px;
+    }
+    .box {
+      background: #020617;
+      border: 2px solid gold;
+      border-radius: 15px;
+      padding: 20px;
+      max-width: 500px;
+      margin: auto;
+      box-shadow: 0 0 20px gold;
+    }
+    input, button {
+      width: 90%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 10px;
+      border: none;
+      text-align: center;
+    }
+    button {
+      background: gold;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+    }
+    td, th {
+      border: 1px solid gold;
+      padding: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="box" id="loginBox">
+  <h2>🔐 LOGIN ADMIN</h2>
+  <input type="password" id="adminPass" placeholder="Password Admin">
+  <button onclick="login()">LOGIN</button>
+</div>
+
+<div class="box" id="adminBox" style="display:none">
+  <h2>🧑‍💻 PANEL ADMIN</h2>
+
+  <input type="text" id="reward" placeholder="Hadiah (boleh teks / angka)">
+  <button onclick="generateCode()">➕ GENERATE KODE</button>
+  <button onclick="loadData()">🔄 REFRESH</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Kode</th>
+        <th>Hadiah</th>
+        <th>Status</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody id="dataTable"></tbody>
+  </table>
+</div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDiaWaVLr88PapSzS2-yDQOsD1PKD1510s",
+    authDomain: "daget-8aa90.firebaseapp.com",
+    projectId: "daget-8aa90"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  function login() {
+    const pass = document.getElementById("adminPass").value;
+    if (pass === "YahyaWijaya") {
+      document.getElementById("loginBox").style.display = "none";
+      document.getElementById("adminBox").style.display = "block";
+      loadData();
+    } else {
+      alert("Password salah!");
+    }
+  }
+
+  function randomCode() {
+    return "KEY-" + Math.random().toString(36).substring(2, 9).toUpperCase();
+  }
+
+  function generateCode() {
+    const reward = document.getElementById("reward").value;
+    if (!reward) return alert("Isi hadiah dulu!");
+
+    const code = randomCode();
+
+    db.collection("codes").doc(code).set({
+      saldo: reward,
+      used: false
+    });
+
+    alert("Kode berhasil dibuat:\n" + code);
+    document.getElementById("reward").value = "";
+    loadData();
+  }
+
+  function loadData() {
+    const table = document.getElementById("dataTable");
+    table.innerHTML = "";
+
+    db.collection("codes").get().then(res => {
+      res.forEach(doc => {
+        const d = doc.data();
+        table.innerHTML += `
+          <tr>
+            <td>${doc.id}</td>
+            <td>${d.saldo}</td>
+            <td>${d.used ? "✅ Terpakai" : "❌ Belum"}</td>
+            <td><button onclick="hapus('${doc.id}')">❌</button></td>
+          </tr>
+        `;
+      });
+    });
+  }
+
+  function hapus(id) {
+    if (confirm("Hapus kode ini?")) {
+      db.collection("codes").doc(id).delete();
+      loadData();
+    }
+  }
+</script>
+</body>
+</html>
