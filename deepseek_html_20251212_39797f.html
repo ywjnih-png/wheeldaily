@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Daget! 🎁</title>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --gold: linear-gradient(45deg, #FFD700, #FFED4E, #DAA520);
+  --gold-solid: #FFD700;
+  --dark-blue: #0A1A2F;
+  --blue: #1E3A8A;
+  --light-blue: #3B82F6;
+  --black: #050505;
+  --card-bg: linear-gradient(135deg, #0F172A, #1E293B);
+  --shadow-gold: 0 0 25px rgba(255, 215, 0, 0.4);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: linear-gradient(135deg, var(--dark-blue), var(--black));
+  color: white;
+  font-family: 'Poppins', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(255, 215, 0, 0.1) 0%, transparent 50%);
+  z-index: -1;
+}
+
+.container {
+  max-width: 500px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Header */
+.header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding-top: 20px;
+}
+
+.title {
+  font-size: 2.8rem;
+  font-weight: 800;
+  background: var(--gold);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 5px;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
+}
+
+.subtitle {
+  color: #94A3B8;
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 1px;
+}
+
+/* Step Cards */
+.step-card {
+  background: var(--card-bg);
+  border-radius: 20px;
+  padding: 30px;
+  margin-bottom: 25px;
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+.step-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gold);
+}
+
+/* Step 1 */
+.input-group {
+  position: relative;
+  margin: 25px 0;
+}
+
+.input-icon {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gold-solid);
+  font-size: 1.2rem;
+}
+
+.input-field {
+  width: 100%;
+  padding: 18px 20px 18px 55px;
+  background: rgba(30, 41, 59, 0.7);
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  border-radius: 12px;
+  color: white;
+  font-size: 1rem;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.3s ease;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--gold-solid);
+  box-shadow: var(--shadow-gold);
+  background: rgba(30, 41, 59, 0.9);
+}
+
+.input-field::placeholder {
+  color: #64748B;
+}
+
+.btn {
+  width: 100%;
+  padding: 18px;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary {
+  background: var(--gold);
+  color: var(--dark-blue);
+  box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.6);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Alert */
+.alert {
+  padding: 15px;
+  border-radius: 10px;
+  margin: 15px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.95rem;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.alert-success {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #4ADE80;
+}
+
+.alert-error {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #F87171;
+}
+
+.alert-info {
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #60A5FA;
+}
+
+/* Info Box */
+.info-box {
+  background: rgba(30, 41, 59, 0.7);
+  border-radius: 12px;
+  padding: 18px;
+  margin: 20px 0;
+  border-left: 4px solid var(--gold-solid);
+}
+
+.info-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  color: var(--gold-solid);
+  font-weight: 600;
+}
+
+.info-content {
+  color: #94A3B8;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* CARDS GRID - DESAIN KARTU REALISTIC */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin: 30px 0;
+  perspective: 1000px;
+}
+
+.card-item {
+  aspect-ratio: 2/3;
+  position: relative;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+}
+
+.card-item.flipped {
+  transform: rotateY(180deg);
+}
+
+.card-front, .card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 15px;
+}
+
+/* Desain Depan Kartu yang Realistic */
+.card-front {
+  background: linear-gradient(145deg, #1E293B, #0F172A);
+  border: 2px solid rgba(255, 215, 0, 0.5);
+  box-shadow: inset 0 0 20px rgba(255, 215, 0, 0.1);
+}
+
+/* Efek hologram di kartu */
+.card-front::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255, 215, 0, 0.05) 50%,
+    transparent 70%
+  );
+  animation: shine 3s infinite linear;
+}
+
+@keyframes shine {
+  0% { transform: rotate(0deg) translateX(-30%); }
+  100% { transform: rotate(360deg) translateX(-30%); }
+}
+
+/* Chip Kartu */
+.card-chip {
+  width: 40px;
+  height: 30px;
+  background: linear-gradient(45deg, #D4AF37, #FFD700, #B8860B);
+  border-radius: 6px;
+  position: relative;
+  margin-top: 15px;
+  margin-left: 5px;
+}
+
+.card-chip::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  background: #1E293B;
+  border-radius: 3px;
+}
+
+/* Nomor Kartu */
+.card-number {
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  letter-spacing: 2px;
+  color: white;
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+  font-size: 0.8rem;
+  text-align: center;
+  margin: 10px 0;
+}
+
+/* Logo Kartu */
+.card-logo {
+  align-self: flex-end;
+  font-size: 1.5rem;
+  color: var(--gold-solid);
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.card-type {
+  font-size: 0.7rem;
+  color: #94A3B8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-align: right;
+}
+
+/* Desain Belakang Kartu (Hadiah) */
+.card-back {
+  background: linear-gradient(135deg, #0F172A, #1E293B);
+  border: 2px solid var(--gold-solid);
+  transform: rotateY(180deg);
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow: inset 0 0 30px rgba(255, 215, 0, 0.2);
+}
+
+.prize-icon {
+  font-size: 3rem;
+  color: var(--gold-solid);
+  margin-bottom: 15px;
+  animation: pulse 2s infinite;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.prize-amount {
+  font-size: 1.8rem;
+  font-weight: 800;
+  background: var(--gold);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 10px 0;
+}
+
+.prize-label {
+  font-size: 0.8rem;
+  color: #94A3B8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Step 3 - Hasil */
+.result-section {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.result-icon {
+  font-size: 4rem;
+  color: var(--gold-solid);
+  margin-bottom: 20px;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.result-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  background: var(--gold);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 10px;
+}
+
+.result-subtitle {
+  color: #94A3B8;
+  font-size: 1rem;
+  margin-bottom: 25px;
+  line-height: 1.5;
+}
+
+.prize-container {
+  background: rgba(255, 215, 0, 0.1);
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  border-radius: 16px;
+  padding: 25px;
+  margin: 25px 0;
+}
+
+.prize-amount-large {
+  font-size: 3rem;
+  font-weight: 800;
+  background: var(--gold);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 15px 0;
+}
+
+/* Timer */
+.timer-container {
+  background: rgba(30, 58, 138, 0.2);
+  border-radius: 12px;
+  padding: 18px;
+  margin: 20px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.timer-icon {
+  color: var(--light-blue);
+  font-size: 1.3rem;
+}
+
+.timer-text {
+  color: #CBD5E1;
+  font-size: 0.95rem;
+}
+
+.timer {
+  font-weight: 700;
+  color: var(--light-blue);
+  font-size: 1.1rem;
+  font-family: monospace;
+}
+
+/* Loading */
+.loading {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 215, 0, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--gold-solid);
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Hidden */
+.hidden {
+  display: none !important;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  margin-top: 30px;
+  padding: 20px;
+  color: #64748B;
+  font-size: 0.9rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .container {
+    padding: 15px;
+  }
+  
+  .step-card {
+    padding: 25px;
+  }
+  
+  .title {
+    font-size: 2.2rem;
+  }
+  
+  .cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .card-front, .card-back {
+    padding: 12px;
+  }
+  
+  .prize-amount-large {
+    font-size: 2.5rem;
+  }
+}
+
+/* Confetti */
+.confetti {
+  position: fixed;
+  width: 15px;
+  height: 15px;
+  background: var(--gold);
+  top: 0;
+  opacity: 0;
+  z-index: 1000;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-100px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <h1 class="title">Daily Daget!</h1>
+    <p class="subtitle">Klaim Hadiah Harianmu</p>
+  </div>
+
+  <!-- Step 1: Masukkan Kode -->
+  <div class="step-card" id="step1">
+    <h2 style="color: white; margin-bottom: 10px;"><i class="fas fa-key"></i> Masukkan Kode</h2>
+    <p style="color: #94A3B8; margin-bottom: 20px;">Masukkan kode hadiah yang kamu dapatkan</p>
+    
+    <div class="input-group">
+      <div class="input-icon">
+        <i class="fas fa-gift"></i>
+      </div>
+      <input type="text" id="kode" class="input-field" placeholder="Masukkan kode hadiah" maxlength="20" autocomplete="off">
+    </div>
+    
+    <div id="status" class="alert hidden"></div>
+    
+    <div class="info-box">
+      <div class="info-title">
+        <i class="fas fa-info-circle"></i>
+        <span>Perhatian</span>
+      </div>
+      <div class="info-content">
+        Setiap device hanya bisa klaim 1 kali dalam 2 jam. Timer akan muncul setelah klaim berhasil.
+      </div>
+    </div>
+    
+    <button id="btnCek" class="btn btn-primary" onclick="cekKode()">
+      <i class="fas fa-unlock"></i>
+      <span>Buka Kartu</span>
+    </button>
+  </div>
+
+  <!-- Step 2: Pilih Kartu -->
+  <div class="step-card hidden" id="step2">
+    <h2 style="color: white; margin-bottom: 10px;"><i class="fas fa-crown"></i> Pilih Kartu Hadiah</h2>
+    <p style="color: #94A3B8; margin-bottom: 10px;">Pilih 1 dari 6 kartu di bawah ini</p>
+    
+    <div class="cards-grid" id="cardsGrid">
+      <!-- Kartu akan di-generate oleh JavaScript -->
+    </div>
+    
+    <div class="loading hidden" id="loading2">
+      <div class="spinner"></div>
+      <p style="color: #94A3B8; margin-top: 10px;">Membuka hadiah...</p>
+    </div>
+    
+    <div class="alert alert-info">
+      <i class="fas fa-lightbulb"></i>
+      <span>Klik kartu mana saja untuk membuka hadiahmu</span>
+    </div>
+  </div>
+
+  <!-- Step 3: Hasil -->
+  <div class="step-card hidden" id="step3">
+    <div class="result-section">
+      <div class="result-icon">
+        <i class="fas fa-trophy"></i>
+      </div>
+      
+      <h1 class="result-title">SELAMAT!</h1>
+      <p class="result-subtitle">Kamu berhasil mendapatkan hadiah spesial</p>
+      
+      <div class="prize-container">
+        <div style="color: #94A3B8; font-size: 0.9rem;">Hadiah Kamu</div>
+        <div class="prize-amount-large" id="hasil"></div>
+        <div style="color: #94A3B8; font-size: 0.9rem;">Telah ditambahkan ke akunmu</div>
+      </div>
+      
+      <div class="timer-container" id="timerDisplay">
+        <div class="timer-icon">
+          <i class="fas fa-clock"></i>
+        </div>
+        <div class="timer-text">
+          Bisa klaim lagi dalam: 
+          <span class="timer" id="timer">02:00:00</span>
+        </div>
+      </div>
+      
+      <div class="info-box">
+        <div class="info-title">
+          <i class="fas fa-exclamation-triangle"></i>
+          <span>Cara Klaim</span>
+        </div>
+        <div class="info-content">
+          1. Screenshot halaman ini sebagai bukti<br>
+          2. Hubungi admin via WhatsApp untuk klaim<br>
+          3. Berikan detail akun dan screenshot
+        </div>
+      </div>
+      
+      <button id="waBtn" class="btn btn-primary" style="margin-bottom: 12px;">
+        <i class="fab fa-whatsapp"></i>
+        <span>Klaim via WhatsApp</span>
+      </button>
+      
+      <button onclick="resetToStep1()" class="btn" style="background: rgba(255,255,255,0.1); color: white;">
+        <i class="fas fa-redo"></i>
+        <span>Kembali ke Awal</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <p>© 2024 Daily Daget! | Hadiah Harian Eksklusif</p>
+  <p style="font-size: 0.8rem; margin-top: 5px;">Satu device hanya bisa klaim setiap 2 jam sekali</p>
+</div>
+
+<script>
+// Firebase Configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyDiaWaVLr88PapSzS2-yDQOsD1PKD1510s",
+  authDomain: "daget-8aa90.firebaseapp.com",
+  projectId: "daget-8aa90"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// Variables
+let hadiah = "";
+let kodeAktif = "";
+const COOLDOWN_HOURS = 2;
+const COOLDOWN_MS = COOLDOWN_HOURS * 60 * 60 * 1000;
+
+// Device ID
+let deviceId = localStorage.getItem('deviceId');
+if (!deviceId) {
+  deviceId = 'device_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  localStorage.setItem('deviceId', deviceId);
+}
+
+// Check cooldown
+function checkCooldown() {
+  const lastClaim = localStorage.getItem('lastClaim');
+  if (!lastClaim) return true;
+  
+  const now = Date.now();
+  const timeSinceLastClaim = now - parseInt(lastClaim);
+  
+  if (timeSinceLastClaim < COOLDOWN_MS) {
+    const remainingTime = COOLDOWN_MS - timeSinceLastClaim;
+    return remainingTime;
+  }
+  
+  return true;
+}
+
+// Update timer display
+function updateTimerDisplay(remainingMs) {
+  const timerDisplay = document.getElementById('timerDisplay');
+  const timerElement = document.getElementById('timer');
+  
+  if (remainingMs === true) {
+    timerDisplay.style.display = 'none';
+    return;
+  }
+  
+  timerDisplay.style.display = 'flex';
+  
+  const hours = Math.floor(remainingMs / (1000 * 60 * 60));
+  const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((remainingMs % (1000 * 60)) / 1000);
+  
+  timerElement.textContent = 
+    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+// Show alert
+function showAlert(message, type = 'info') {
+  const status = document.getElementById('status');
+  const icons = {
+    success: 'fas fa-check-circle',
+    error: 'fas fa-times-circle',
+    info: 'fas fa-info-circle'
+  };
+  
+  status.className = `alert alert-${type}`;
+  status.innerHTML = `<i class="${icons[type]}"></i><span>${message}</span>`;
+  status.classList.remove('hidden');
+  
+  if (type === 'error' || type === 'success') {
+    setTimeout(() => {
+      status.classList.add('hidden');
+    }, 4000);
+  }
+}
+
+// Check code
+async function cekKode() {
+  const kodeInput = document.getElementById('kode');
+  const kode = kodeInput.value.trim().toUpperCase();
+  const btnCek = document.getElementById('btnCek');
+  
+  if (!kode) {
+    showAlert('Masukkan kode terlebih dahulu', 'error');
+    kodeInput.focus();
+    return;
+  }
+  
+  // Check cooldown
+  const cooldownCheck = checkCooldown();
+  if (cooldownCheck !== true) {
+    updateTimerDisplay(cooldownCheck);
+    showAlert(`Tunggu ${COOLDOWN_HOURS} jam antar klaim`, 'error');
+    return;
+  }
+  
+  btnCek.disabled = true;
+  btnCek.innerHTML = `<i class="fas fa-spinner fa-spin"></i><span>Memeriksa...</span>`;
+  
+  try {
+    const doc = await db.collection("codes").doc(kode).get();
+    
+    if (!doc.exists) {
+      showAlert('Kode tidak valid atau sudah kadaluarsa', 'error');
+    } else if (doc.data().used) {
+      showAlert('Kode ini sudah digunakan', 'error');
+    } else {
+      showAlert('Kode valid! Memuat kartu...', 'success');
+      kodeAktif = kode;
+      hadiah = doc.data().saldo;
+      
+      setTimeout(() => {
+        document.getElementById('step1').classList.add('hidden');
+        document.getElementById('step2').classList.remove('hidden');
+        loadCards();
+      }, 1200);
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    showAlert('Koneksi error. Coba lagi.', 'error');
+  } finally {
+    btnCek.disabled = false;
+    btnCek.innerHTML = `<i class="fas fa-unlock"></i><span>Buka Kartu</span>`;
+  }
+}
+
+// Load 6 kartu dengan desain realistic
+function loadCards() {
+  const cardsGrid = document.getElementById('cardsGrid');
+  cardsGrid.innerHTML = '';
+  
+  const cardTypes = ['GOLD', 'PLATINUM', 'DIAMOND', 'VIP', 'PREMIUM', 'ROYAL'];
+  const cardIcons = ['gem', 'crown', 'diamond', 'star', 'award', 'medal'];
+  
+  for (let i = 0; i < 6; i++) {
+    const cardItem = document.createElement('div');
+    cardItem.className = 'card-item';
+    cardItem.dataset.index = i;
+    
+    // Generate random card number
+    const cardNumber = '**** ' + Math.floor(1000 + Math.random() * 9000);
+    
+    cardItem.innerHTML = `
+      <div class="card-front">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div class="card-chip"></div>
+          <div class="card-logo">
+            <i class="fas fa-${cardIcons[i]}"></i>
+          </div>
+        </div>
+        
+        <div class="card-number">${cardNumber}</div>
+        
+        <div>
+          <div class="card-type">${cardTypes[i]}</div>
+          <div style="color: #64748B; font-size: 0.7rem; margin-top: 5px;">DAILY DAGET</div>
+        </div>
+      </div>
+      
+      <div class="card-back">
+        <div class="prize-icon">
+          <i class="fas fa-gift"></i>
+        </div>
+        <div class="prize-amount">${hadiah}</div>
+        <div class="prize-label">HADIAH KAMU</div>
+      </div>
+    `;
+    
+    cardItem.addEventListener('click', () => selectCard(i, cardItem));
+    cardsGrid.appendChild(cardItem);
+  }
+}
+
+// Select card
+function selectCard(index, cardElement) {
+  const allCards = document.querySelectorAll('.card-item');
+  allCards.forEach(card => {
+    card.style.pointerEvents = 'none';
+  });
+  
+  cardElement.classList.add('flipped');
+  
+  const loading2 = document.getElementById('loading2');
+  loading2.classList.remove('hidden');
+  
+  setTimeout(async () => {
+    try {
+      await db.collection("codes").doc(kodeAktif).update({ 
+        used: true,
+        usedAt: new Date().toISOString(),
+        deviceId: deviceId,
+        prize: hadiah
+      });
+      
+      localStorage.setItem('lastClaim', Date.now().toString());
+      
+      createConfetti();
+      
+      setTimeout(() => {
+        loading2.classList.add('hidden');
+        document.getElementById('step2').classList.add('hidden');
+        document.getElementById('step3').classList.remove('hidden');
+        
+        document.getElementById('hasil').textContent = hadiah;
+        
+        const waBtn = document.getElementById('waBtn');
+        const text = `Halo Admin Daily Daget!
+
+Saya mau klaim hadiah dengan data:
+Nama: 
+Nomor Rekening / E-Wallet: 
+Hadiah: ${hadiah}
+
+Saya lampirkan screenshot sebagai bukti.`;
+
+        waBtn.onclick = function() {
+          window.open("https://wa.me/6281376508126?text=" + encodeURIComponent(text));
+        };
+        
+        startCooldownTimer();
+        
+      }, 1500);
+      
+    } catch (error) {
+      console.error('Error:', error);
+      showAlert('Gagal memproses. Coba lagi.', 'error');
+      
+      allCards.forEach(card => {
+        card.style.pointerEvents = 'auto';
+      });
+      cardElement.classList.remove('flipped');
+      loading2.classList.add('hidden');
+    }
+  }, 1000);
+}
+
+// Create confetti
+function createConfetti() {
+  const colors = ['#FFD700', '#FFED4E', '#1E3A8A', '#3B82F6'];
+  
+  for (let i = 0; i < 60; i++) {
+    const confetti = document.createElement('div');
+    confetti.className = 'confetti';
+    confetti.style.left = Math.random() * 100 + 'vw';
+    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+    confetti.style.width = Math.random() * 15 + 5 + 'px';
+    confetti.style.height = Math.random() * 15 + 5 + 'px';
+    
+    document.body.appendChild(confetti);
+    
+    const animation = confetti.animate([
+      { transform: `translateY(-100px) rotate(0deg)`, opacity: 1 },
+      { transform: `translateY(${window.innerHeight}px) rotate(${Math.random() * 360}deg)`, opacity: 0 }
+    ], {
+      duration: Math.random() * 2000 + 2000,
+      easing: 'cubic-bezier(0.215, 0.61, 0.355, 1)'
+    });
+    
+    animation.onfinish = () => confetti.remove();
+  }
+}
+
+// Start cooldown timer
+function startCooldownTimer() {
+  const lastClaim = localStorage.getItem('lastClaim');
+  if (!lastClaim) return;
+  
+  function updateTimer() {
+    const now = Date.now();
+    const lastClaimTime = parseInt(lastClaim);
+    const elapsed = now - lastClaimTime;
+    const remaining = COOLDOWN_MS - elapsed;
+    
+    if (remaining > 0) {
+      updateTimerDisplay(remaining);
+      setTimeout(updateTimer, 1000);
+    } else {
+      updateTimerDisplay(true);
+    }
+  }
+  
+  updateTimer();
+}
+
+// Reset to step 1
+function resetToStep1() {
+  document.getElementById('step3').classList.add('hidden');
+  document.getElementById('step1').classList.remove('hidden');
+  document.getElementById('kode').value = '';
+  document.getElementById('kode').focus();
+  document.getElementById('status').classList.add('hidden');
+  
+  const cooldownCheck = checkCooldown();
+  updateTimerDisplay(cooldownCheck === true ? true : cooldownCheck);
+}
+
+// Initialize
+window.onload = function() {
+  document.getElementById('kode').focus();
+  
+  const cooldownCheck = checkCooldown();
+  updateTimerDisplay(cooldownCheck === true ? true : cooldownCheck);
+  
+  document.getElementById('kode').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      cekKode();
+    }
+  });
+};
+</script>
+</body>
+</html>
